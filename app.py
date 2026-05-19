@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from fpdf2 import FPDF
+from fpdf import FPDF
 
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="منصة التميز للنتائج", page_icon="🎓", layout="centered")
