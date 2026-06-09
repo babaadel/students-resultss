@@ -14,11 +14,6 @@ st.markdown("""
     div.stButton > button { width: 100%; border-radius: 12px; background-color: #2563eb; color: white; height: 3.2em; font-weight: bold; font-size: 16px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     div.stButton > button:hover { background-color: #1d4ed8; }
     
-    /* تنسيق صندوق بطاقات النتائج لتظهر بوضوح (نص داكن وخلفية مريحة) */
-    .metric-container { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 10px; }
-    .metric-title { color: #64748b; font-size: 14px; margin-bottom: 5px; font-weight: 600; }
-    .metric-value { color: #0f172a; font-size: 26px; font-weight: bold; }
-    
     /* تنسيق علامات التبويب والخانات لتكون واضحة وجذابة على الهاتف */
     button[data-baseweb="tab"] { font-size: 16px !important; font-weight: bold !important; padding: 12px 20px !important; }
     
@@ -45,7 +40,7 @@ else:
         df = pd.read_excel(EXCEL_FILE)
         
         # مدخلات البحث (الاسم أو الرقم)
-        query = st.text_input("أدخل رقم التلميذ أو الاسم الكامل:", placeholder="مثال: 10 أو أدو ولد سعيدو")
+        query = st.text_input("أدخل رقم التلميذ أو الاسم الكامل:", placeholder="مثال: 10 أو أحمد محمد")
         
         if st.button("استعلام"):
             if query:
@@ -78,89 +73,84 @@ else:
                     # إنشاء الخانات الثلاث المباشرة (الامتحانات)
                     tab1, tab2, tab3 = st.tabs(["📝 الامتحان الأول", "📝 الامتحان الثاني", "🏆 الامتحان الأخير"])
                     
-                    # --- خانة الامتحان الأول ---
+                    # --- خانة الامتحان الأول (بسيطة ومباشرة للمواد الحالية فقط) ---
                     with tab1:
                         st.subheader("📊 كشف درجات الامتحان الأول")
                         labels1 = []
                         values1 = []
                         
-                        # جلب درجات المواد الخاصة بالامتحان الأول (ملحقة برقم 1)
                         for sub in subjects_list:
                             labels1.append(sub)
                             values1.append(format_value(s.get(f'{sub} 1')))
                         
-                        # إضافة الإجماليات والمؤشرات الخاصة بالامتحان الأول
-                        summary_fields1 = ['المجموع 1', 'المعدل 1', 'الرتبة 1', 'القرار 1']
-                        summary_labels1 = ['المجموع', 'المعدل', 'الرتبة', 'القرار']
-                        
-                        for field, label in zip(summary_fields1, summary_labels1):
-                            labels1.append(label)
-                            values1.append(format_value(s.get(field)))
+                        labels1.extend(['المجموع', 'الرتبة العامة', 'القرار العام'])
+                        values1.extend([
+                            format_value(s.get('المجموع 1')),
+                            s.get('الرتبة العامة', 'غير متوفر'),
+                            s.get('القرار العام', 'غير متوفر')
+                        ])
                             
-                        # عرض الجدول
                         st.table(pd.DataFrame({'المادة / البيان': labels1, 'النتيجة': values1}))
-                        
-                        # عرض رسالة القرار بالأسفل للتنسيق البصري
-                        dec1 = str(s.get('القرار 1', ''))
-                        if "ناجح" in dec1 or "مقبول" in dec1:
-                            st.markdown(f'<div class="success-box">🎉 نتيجة الامتحان الأول: {dec1} </div>', unsafe_allow_html=True)
-                        elif "راسب" in dec1 or "مكرر" in dec1:
-                            st.markdown(f'<div class="fail-box">😔 نتيجة الامتحان الأول: {dec1} </div>', unsafe_allow_html=True)
 
-                    # --- خانة الامتحان الثاني ---
+                    # --- خانة الامتحان الثاني (بسيطة ومباشرة للمواد الحالية فقط) ---
                     with tab2:
                         st.subheader("📊 كشف درجات الامتحان الثاني")
                         labels2 = []
                         values2 = []
                         
-                        # جلب درجات المواد الخاصة بالامتحان الثاني (ملحقة برقم 2)
                         for sub in subjects_list:
                             labels2.append(sub)
                             values2.append(format_value(s.get(f'{sub} 2')))
                         
-                        # إضافة الإجماليات والمؤشرات الخاصة بالامتحان الثاني
-                        summary_fields2 = ['المجموع 2', 'المعدل 2', 'الرتبة 2', 'القرار 2']
-                        summary_labels2 = ['المجموع', 'المعدل', 'الرتبة', 'القرار']
-                        
-                        for field, label in zip(summary_fields2, summary_labels2):
-                            labels2.append(label)
-                            values2.append(format_value(s.get(field)))
+                        labels2.extend(['المجموع', 'الرتبة العامة', 'القرار العام'])
+                        values2.extend([
+                            format_value(s.get('المجموع 2')),
+                            s.get('الرتبة العامة', 'غير متوفر'),
+                            s.get('القرار العام', 'غير متوفر')
+                        ])
                             
                         st.table(pd.DataFrame({'المادة / البيان': labels2, 'النتيجة': values2}))
-                        
-                        dec2 = str(s.get('القرار 2', ''))
-                        if "ناجح" in dec2 or "مقبول" in dec2:
-                            st.markdown(f'<div class="success-box">🎉 نتيجة الامتحان الثاني: {dec2} </div>', unsafe_allow_html=True)
-                        elif "راسب" in dec2 or "مكرر" in dec2:
-                            st.markdown(f'<div class="fail-box">😔 نتيجة الامتحان الثاني: {dec2} </div>', unsafe_allow_html=True)
 
-                    # --- خانة الامتحان الأخير (الثالث) ---
+                    # --- خانة الامتحان الأخير (هنا التعديل المخصص والشامل لكافة المعدلات بالتسلسل) ---
                     with tab3:
-                        st.subheader("📊 كشف درجات الامتحان الأخير")
+                        st.subheader("📊 كشف درجات الامتحان الأخير والنهائي")
                         labels3 = []
                         values3 = []
                         
-                        # جلب درجات المواد الخاصة بالامتحان الأخير (ملحقة برقم 3)
+                        # 1. عرض درجات مواد الامتحان الثالث
                         for sub in subjects_list:
                             labels3.append(sub)
                             values3.append(format_value(s.get(f'{sub} 3')))
                         
-                        # إضافة الإجماليات والمؤشرات الخاصة بالامتحان الأخير بالإضافة إلى (المعدل العام السنوي والقرار النهائي للعام) كما طلبت
-                        summary_fields3 = ['المجموع 3', 'المعدل 3', 'الرتبة 3', 'القرار 3', 'المعدل العام', 'الرتبة العامة', 'القرار العام']
-                        summary_labels3 = ['المجموع', 'المعدل', 'الرتبة', 'القرار', 'المعدل العام للسنة', 'الرتبة السنوية العامة', 'القرار السنوي النهائي']
-                        
-                        for field, label in zip(summary_fields3, summary_labels3):
-                            labels3.append(label)
-                            values3.append(format_value(s.get(field)))
+                        # 2. السرد التدريجي المطلوب بعد المجموع في الامتحان الأخير حصراً
+                        labels3.extend([
+                            'المجموع', 
+                            'معدل الامتحان الأول', 
+                            'معدل الامتحان الثاني', 
+                            'معدل الامتحان الأخير', 
+                            'المعدل العام', 
+                            'الرتبة العامة', 
+                            'القرار العام'
+                        ])
+                        values3.extend([
+                            format_value(s.get('المجموع 3')),
+                            format_value(s.get('معدل الامتحان الأول')),
+                            format_value(s.get('معدل الامتحان الثاني')),
+                            format_value(s.get('معدل الامتحان الأخير')),
+                            format_value(s.get('المعدل العام')),
+                            s.get('الرتبة العامة', 'غير متوفر'),
+                            s.get('القرار العام', 'غير متوفر')
+                        ])
                             
                         st.table(pd.DataFrame({'المادة / البيان': labels3, 'النتيجة': values3}))
                         
-                        dec3 = str(s.get('القرار العام', ''))
-                        if "ناجح" in dec3 or "منتقل" in dec3:
-                            st.markdown(f'<div class="success-box">🏆 النتيجة السنوية النهائية: {dec3} 🎈</div>', unsafe_allow_html=True)
+                        # عرض رسالة النجاح والبالونات بناءً على النتيجة النهائية للعام الدراسي
+                        dec_general = str(s.get('القرار العام', ''))
+                        if "ناجح" in dec_general or "منتقل" in dec_general:
+                            st.markdown(f'<div class="success-box">🏆 النتيجة النهائية للعام الدراسي: {dec_general} 🎈</div>', unsafe_allow_html=True)
                             st.balloons()
-                        elif "راسب" in dec3 or "مكرر" in dec3:
-                            st.markdown(f'<div class="fail-box">😔 النتيجة السنوية النهائية: {dec3} 💔</div>', unsafe_allow_html=True)
+                        elif "راسب" in dec_general or "مكرر" in dec_general:
+                            st.markdown(f'<div class="fail-box">😔 النتيجة النهائية للعام الدراسي: {dec_general} 💔</div>', unsafe_allow_html=True)
                                 
                 else:
                     st.error(f"❌ لم يتم العثور على نتيجة لـ '{query}'.")
