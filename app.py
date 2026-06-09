@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-from fpdf import FPDF
 
 # 1. إعدادات الصفحة وجعل التخطيط متجاوباً تلقائياً
 st.set_page_config(page_title="منصة نتائج التلاميذ", page_icon="🎓", layout="centered")
@@ -11,7 +10,7 @@ st.markdown("""
     <style>
     .stApp { direction: rtl; text-align: right; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     
-    /* تنسيق زر الاستعلام الأساسي وزر الطباعة */
+    /* تنسيق زر الاستعلام الأساسي */
     div.stButton > button { width: 100%; border-radius: 12px; background-color: #2563eb; color: white; height: 3.2em; font-weight: bold; font-size: 16px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     div.stButton > button:hover { background-color: #1d4ed8; }
     
@@ -28,95 +27,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("🎓 بوابة نتائج التلاميذ")
-st.write("استخدم الاسم أو الرقم للاستعلام عن النتيجة وطباعة كشف الدرجات")
+st.write("استخدم الاسم أو الرقم للاستعلام عن النتيجة")
 
 # اسم ملف البيانات الثابت
 EXCEL_FILE = 'results.xlsx'
-
-# دالة لتوليد ملف PDF متوافق مع الشكلية الرسمية الموريتانية (يدعم الأحرف العربية عبر الخطوط القياسية المدمجة وتدفق الاتجاه)
-def create_pdf(s, subjects_list, format_value):
-    pdf = FPDF(orientation="P", unit="mm", format="A4")
-    pdf.add_page()
-    
-    # رسم الإطار الخارجي لكشف الدرجات
-    pdf.set_line_width(0.5)
-    pdf.rect(5, 5, 200, 287)
-    
-    # لتفادي مشاكل ترميز الخطوط العربية في مكتبات PDF الأساسية بدون ملفات خطوط خارجية،
-    # نقوم بكتابة النصوص الأساسية بشكل متناسق باستخدام خط عريض قياسي.
-    pdf.set_font("Helvetica", "B", 12)
-    
-    # تصميم الترويسة العلوية (يمين ويسار) كالشكلية تماماً
-    pdf.text(12, 15, "Charaf - Ikha - Adl")
-    pdf.text(12, 21, "Annee Scolaire: 2025/2026")
-    pdf.text(12, 27, "Ecole: Kankossa")
-    pdf.text(12, 33, "Classe: 3eme Annee AP")
-    
-    pdf.text(130, 15, "Republique Islamique de Mauritanie")
-    pdf.text(130, 21, "Ministere de l'Education Nationale")
-    pdf.text(130, 27, "Direction Regionale de l'Assaba")
-    pdf.text(130, 33, "Inspection de Kankossa")
-    
-    # عنوان الكشف في المنتصف
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 35, "", ln=1) # مسافة عازلة
-    pdf.cell(0, 10, "BULLETIN DE NOTES - FIN DE L'ANNEE", ln=1, align="C")
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 5, f"Nom de l'Eleve: {s.get('الاسم', '..........')}", ln=1, align="C")
-    pdf.cell(0, 5, f"Numero: {s.get('الرقم', '....')}", ln=1, align="C")
-    pdf.cell(0, 10, "", ln=1) # مسافة
-    
-    # إنشاء الجدول (رأس الجدول)
-    pdf.set_fill_color(240, 240, 240)
-    pdf.cell(60, 10, "Matiere (Sub)", 1, 0, "C", True)
-    pdf.cell(40, 10, "Note Ex. 1", 1, 0, "C", True)
-    pdf.cell(40, 10, "Note Ex. 2", 1, 0, "C", True)
-    pdf.cell(50, 10, "Note Ex. Final (3)", 1, 1, "C", True)
-    
-    # تعبئة علامات المواد الثلاث لكل مادة في سطر واحد لتوفير الورق ومنع اللخبطة
-    pdf.set_font("Helvetica", "", 11)
-    for sub in subjects_list:
-        # أسماء المواد بالفرنسية لتظهر صحيحة ومطابقة للترتيب الموريتاني في الـ PDF
-        sub_display = sub
-        if sub == "اللغة العربية": sub_display = "Arabe"
-        elif sub == "التربية الاسلامية": sub_display = "Education Islamique"
-        elif sub == "الرياضيات": sub_display = "Mathematiques"
-        elif sub == "الفرنسية": sub_display = "Francais"
-        elif sub == "العلوم الطبيعية": sub_display = "Sciences Naturelles"
-        elif sub == "التاريخ والجغرافيا": sub_display = "Histoire & Geo"
-        elif sub == "التربية الفنية": sub_display = "Education Artistique"
-        elif sub == "التربية المدنية": sub_display = "Education Civique"
-        elif sub == "الرياضة البدنية": sub_display = "Education Physique"
-            
-        pdf.cell(60, 8, sub_display, 1, 0, "L")
-        pdf.cell(40, 8, str(format_value(s.get(f'{sub} 1'))), 1, 0, "C")
-        pdf.cell(40, 8, str(format_value(s.get(f'{sub} 2'))), 1, 0, "C")
-        pdf.cell(50, 8, str(format_value(s.get(f'{sub} 3'))), 1, 1, "C")
-        
-    # إضافة سطر المجموع والمعدلات والإجماليات في الأسفل
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.cell(60, 8, "TOTAL / TOTAL", 1, 0, "L", True)
-    pdf.cell(40, 8, str(format_value(s.get('المجموع 1'))), 1, 0, "C")
-    pdf.cell(40, 8, str(format_value(s.get('المجموع 2'))), 1, 0, "C")
-    pdf.cell(50, 8, str(format_value(s.get('المجموع 3'))), 1, 1, "C")
-    
-    pdf.cell(60, 8, "MOYENNE / MOYENNE", 1, 0, "L", True)
-    pdf.cell(40, 8, str(format_value(s.get('معدل الامتحان الأول'))), 1, 0, "C")
-    pdf.cell(40, 8, str(format_value(s.get('معدل الامتحان الثاني'))), 1, 0, "C")
-    pdf.cell(50, 8, str(format_value(s.get('معدل الامتحان الأخير'))), 1, 1, "C")
-    
-    # النتائج العامة السنوية النهائية في ذيل الجدول
-    pdf.cell(0, 5, "", ln=1)
-    pdf.cell(95, 8, f"MOYENNE GENERALE (Annual Average): {format_value(s.get('المعدل العام'))}", 1, 0, "L")
-    pdf.cell(95, 8, f"RANG (Rank): {s.get('الرتبة العامة', '..........')}", 1, 1, "L")
-    pdf.cell(0, 8, f"DECISION (Decision Final): {s.get('القرار العام', '..........')}", 1, 1, "L")
-    
-    # خانة التوقيعات والختم أسفل الصفحة كما في وثيقتك
-    pdf.cell(0, 15, "", ln=1)
-    pdf.cell(95, 10, "Signature de l'Enseignant (المعلم)", 0, 0, "C")
-    pdf.cell(95, 10, "Signature du Directeur (المدير)", 0, 1, "C")
-    
-    return pdf.output()
 
 # 3. التحقق من وجود الملف
 if not os.path.exists(EXCEL_FILE):
@@ -130,6 +44,7 @@ else:
         
         if st.button("استعلام"):
             if query:
+                # تنظيف النص وتغيير نوع البيانات للبحث المرن
                 q = str(query).strip()
                 match = df[(df['الرقم'].astype(str).str.strip() == q) | 
                            (df['الاسم'].str.strip().str.contains(q, case=False, na=False))]
@@ -141,19 +56,21 @@ else:
                     st.header(f"مرحباً، {s.get('الاسم', 'أيها التلميذ')}")
                     st.info(f"رقم التلميذ: {s.get('الرقم', 'غير متوفر')}")
 
+                    # دالة مساعدة لتقريب المعدلات والدرجات لرقمين فقط بعد الفاصلة
                     def format_value(val):
                         try:
                             return round(float(val), 2)
                         except (ValueError, TypeError):
                             return val if pd.notna(val) else 'غير متوفر'
 
+                    # قائمة المواد الثابتة المطلوبة بكل امتحان
                     subjects_list = [
                         'اللغة العربية', 'التربية الاسلامية', 'الرياضيات', 'الفرنسية', 
                         'العلوم الطبيعية', 'التاريخ والجغرافيا', 'التربية الفنية', 
                         'التربية المدنية', 'الرياضة البدنية'
                     ]
 
-                    # إنشاء الخانات الثلاث المباشرة المخصصة للعرض السريع على المنصة
+                    # إنشاء الخانات الثلاث المباشرة (الامتحانات)
                     tab1, tab2, tab3 = st.tabs(["📝 الامتحان الأول", "📝 الامتحان الثاني", "🏆 الامتحان الأخير"])
                     
                     # --- خانة الامتحان الأول ---
@@ -161,11 +78,20 @@ else:
                         st.subheader("📊 كشف درجات الامتحان الأول")
                         labels1 = []
                         values1 = []
+                        
                         for sub in subjects_list:
                             labels1.append(sub)
                             values1.append(format_value(s.get(f'{sub} 1')))
+                        
+                        # إضافة المجموع ثم معدل الامتحان الأول ثم الرتبة والقرار مباشرة
                         labels1.extend(['المجموع', 'معدل الامتحان الأول', 'الرتبة', 'القرار'])
-                        values1.extend([format_value(s.get('المجموع 1')), format_value(s.get('معدل الامتحان الأول')), s.get('الرتبة 1', 'غير متوفر'), s.get('القرار 1', 'غير متوفر')])
+                        values1.extend([
+                            format_value(s.get('المجموع 1')),
+                            format_value(s.get('معدل الامتحان الأول')),
+                            s.get('الرتبة 1', 'غير متوفر'),
+                            s.get('القرار 1', 'غير متوفر')
+                        ])
+                            
                         st.table(pd.DataFrame({'المادة / البيان': labels1, 'النتيجة': values1}))
 
                     # --- خانة الامتحان الثاني ---
@@ -173,11 +99,20 @@ else:
                         st.subheader("📊 كشف درجات الامتحان الثاني")
                         labels2 = []
                         values2 = []
+                        
                         for sub in subjects_list:
                             labels2.append(sub)
                             values2.append(format_value(s.get(f'{sub} 2')))
+                        
+                        # إضافة المجموع ثم معدل الامتحان الثاني ثم الرتبة والقرار مباشرة
                         labels2.extend(['المجموع', 'معدل الامتحان الثاني', 'الرتبة', 'القرار'])
-                        values2.extend([format_value(s.get('المجموع 2')), format_value(s.get('معدل الامتحان الثاني')), s.get('الرتبة 2', 'غير متوفر'), s.get('القرار 2', 'غير متوفر')])
+                        values2.extend([
+                            format_value(s.get('المجموع 2')),
+                            format_value(s.get('معدل الامتحان الثاني')),
+                            s.get('الرتبة 2', 'غير متوفر'),
+                            s.get('القرار 2', 'غير متوفر')
+                        ])
+                            
                         st.table(pd.DataFrame({'المادة / البيان': labels2, 'النتيجة': values2}))
 
                     # --- خانة الامتحان الأخير والنهائي ---
@@ -185,7 +120,45 @@ else:
                         st.subheader("📊 كشف درجات الامتحان الأخير والنهائي")
                         labels3 = []
                         values3 = []
+                        
+                        # عرض درجات مواد الامتحان الثالث
                         for sub in subjects_list:
                             labels3.append(sub)
                             values3.append(format_value(s.get(f'{sub} 3')))
-                        labels3.extend(['المجموع', 'معدل الامتحان الأول', 'معدل الامتحان الثاني', 'معدل الامتحان الأخير', 'المعدل العام', 'الرتبة العامة', 'القرار العام'])
+                        
+                        # التدرج السنوي الشامل والكامل في نهاية جدول الامتحان الأخير حصراً
+                        labels3.extend([
+                            'المجموع', 
+                            'معدل الامتحان الأول', 
+                            'معدل الامتحان الثاني', 
+                            'معدل الامتحان الأخير', 
+                            'المعدل العام', 
+                            'الرتبة العامة', 
+                            'القرار العام'
+                        ])
+                        values3.extend([
+                            format_value(s.get('المجموع 3')),
+                            format_value(s.get('معدل الامتحان الأول')),
+                            format_value(s.get('معدل الامتحان الثاني')),
+                            format_value(s.get('معدل الامتحان الأخير')),
+                            format_value(s.get('المعدل العام')),
+                            s.get('الرتبة العامة', 'غير متوفر'),
+                            s.get('القرار العام', 'غير متوفر')
+                        ])
+                            
+                        st.table(pd.DataFrame({'المادة / البيان': labels3, 'النتيجة': values3}))
+                        
+                        # عرض رسالة النجاح الكبرى بناءً على النتيجة النهائية للعام الدراسي (القرار العام)
+                        dec_general = str(s.get('القرار العام', ''))
+                        if "ناجح" in dec_general or "منتقل" in dec_general:
+                            st.markdown(f'<div class="success-box">🏆 النتيجة النهائية للعام الدراسي: {dec_general} 🎈</div>', unsafe_allow_html=True)
+                            st.balloons()
+                        elif "راسب" in dec_general or "مكرر" in dec_general:
+                            st.markdown(f'<div class="fail-box">😔 النتيجة النهائية للعام الدراسي: {dec_general} 💔</div>', unsafe_allow_html=True)
+                                
+                else:
+                    st.error(f"❌ لم يتم العثور على نتيجة لـ '{query}'.")
+            else:
+                st.info("يرجى كتابة الاسم أو الرقم أولاً.")
+    except Exception as e:
+        st.error(f"حدث خطأ في قراءة البيانات: {e}")
