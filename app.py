@@ -45,9 +45,9 @@ else:
                     st.divider()
                     st.header(f"مرحباً، {s.get('الاسم', 'أيها التلميذ')}")
                     
-                    # عرض المعدل والرتبة
+                    # عرض المعدل والرتبة في الأعلى كبطاقات سريعة
                     col1, col2 = st.columns(2)
-                    col1.metric("المعدل العام", s.get('المعدل', 'غير متوفر'))
+                    col1.metric("المعدل العام", s.get('المعدل العام', 'غير متوفر'))
                     col2.metric("الرتبة", s.get('الرتبة', 'غير متوفر'))
                     
                     # القرار والاحتفال
@@ -58,38 +58,35 @@ else:
                     elif "راسب" in قرار or "مكرر" in قرار:
                         st.markdown(f'<div class="fail-text">😔 نعتذر، النتيجة: {قرار} 💔</div>', unsafe_allow_html=True)
                     
-                    # 4. عرض الجدول بطريقة آمنة (الحل لمشكلة KeyError)
-                    st.subheader("📊 تفاصيل النقاط")
+                    # 4. عرض تفاصيل التلميذ بناءً على العناوين الجديدة
+                    st.subheader("📊 تفاصيل وبينات التلميذ")
                     
-                    expected_subjects = [
-                        'اللغة العربية', 'التربية الاسلامية', 'الرياضيات', 'الفرنسية', 
-                        'العلوم', 'التاريخ والجغرافيا', 'التربية المدنية', 'التربية الفنية', 'الرياضة'
+                    # قائمة العناوين الجديدة المطلوبة
+                    expected_columns = [
+                        'الرقم', 'الاسم', 'معدل الامتحان الأول', 
+                        'معدل الامتحان الثاني', 'معدل الامتحان الأخير', 
+                        'المعدل العام', 'الرتبة', 'القرار'
                     ]
                     
-                    available_subjects = []
-                    available_scores = []
+                    available_labels = []
+                    available_values = []
 
-                    for sub in expected_subjects:
-                        if sub in s: # التأكد أن المادة موجودة كعمود في الإكسل
-                            available_subjects.append(sub)
-                            available_scores.append(s[sub])
+                    for col in expected_columns:
+                        if col in s: # التأكد من وجود العمود في ملف الإكسل
+                            available_labels.append(col)
+                            available_values.append(s[col])
                     
-                    if 'المجموع' in s:
-                        available_subjects.append('المجموع الإجمالي')
-                        available_scores.append(s['المجموع'])
-
-                    if available_subjects:
-                        scores_df = pd.DataFrame({
-                            'المادة': available_subjects,
-                            'النقطة': available_scores
+                    if available_labels:
+                        details_df = pd.DataFrame({
+                            'البيان': available_labels,
+                            'القيمة': available_values
                         })
-                        st.table(scores_df)
+                        st.table(details_df)
                     else:
-                        st.warning("⚠️ لم يتم العثور على أعمدة المواد. تأكد من مطابقة أسماء الأعمدة في الإكسل.")
+                        st.warning("⚠️ لم يتم العثور على الأعمدة المطلوبة. تأكد من مطابقة أسماء الأعمدة في ملف الإكسل تماماً.")
                 else:
                     st.error(f"❌ لم يتم العثور على نتيجة لـ '{query}'.")
             else:
                 st.info("يرجى كتابة الاسم أو الرقم أولاً.")
     except Exception as e:
         st.error(f"حدث خطأ في قراءة البيانات: {e}")
-
