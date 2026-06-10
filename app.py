@@ -1,11 +1,23 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 
 # 1. إعدادات الصفحة وجعل التخطيط متجاوباً تلقائياً
 st.set_page_config(page_title="منصة نتائج التلاميذ", page_icon="🎓", layout="centered")
 
-# 2. تصميم CSS محسن بالكامل لواجهة الموقع
+# دالة لتحويل الصورة المحلية إلى Base64 لتضمينها بداخل الـ HTML بشكل مضمون
+def get_image_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as image_file:
+            return "data:image/png;base64," + base64.b64encode(image_file.read()).decode()
+    return ""
+
+# اسم ملف الشعار المرفوع في مجلد المشروع
+LOGO_FILE = "logo.png" 
+logo_base64 = get_image_base64(LOGO_FILE)
+
+# 2. تصميم CSS محسن لواجهة الموقع
 st.markdown("""
     <style>
     .stApp { direction: rtl; text-align: right; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -17,7 +29,7 @@ st.markdown("""
     /* تنسيق علامات التبويب والخانات */
     button[data-baseweb="tab"] { font-size: 16px !important; font-weight: bold !important; padding: 12px 20px !important; }
     
-    /* تنسيق رسائل النجاح والرسوب في الواجهة */
+    /* تنسيق رسائل النجاح والرسوب */
     .success-box { color: #15803d; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
     .fail-box { color: #b91c1c; background-color: #fef2f2; border: 1px solid #fecaca; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
     
@@ -30,7 +42,7 @@ st.title("🎓 بوابة نتائج التلاميذ")
 st.write("استخدم الاسم أو الرقم للاستعلام عن النتيجة")
 
 # ===== دالة توليد HTML لشكلية الكشف الرسمي الموريتاني المحسن =====
-def build_report_html(s, format_value, exam_num):
+def build_report_html(s, format_value, exam_num, logo_b64):
     if exam_num == 1:
         exam_title = "امتحان الفصل الأول"
         avg_key = 'معدل الامتحان الأول'
@@ -64,9 +76,6 @@ def build_report_html(s, format_value, exam_num):
     else:
         dec_color = "#dc2626"
 
-    # رابط الشعار الموريتاني الرسمي الدائري الملون
-    logo_url = "https://upload.wikimedia.org/wikipedia/commons/4/43/Seal_of_Mauritania.svg"
-
     html_template = """<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -92,7 +101,7 @@ def build_report_html(s, format_value, exam_num):
   }
   .top-header .col { font-size: 13px; line-height: 1.8; font-weight: 500; }
   .top-header .col-center { text-align: center; }
-  .top-header .col-center img { width: 90px; height: 90px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3)); }
+  .top-header .col-center img { width: 95px; height: 95px; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3)); }
   .top-header strong { font-size: 14px; color: #ffca28; }
   .motto { font-size: 12px; color: #eaeaea; text-align: left; margin-bottom: 4px; font-weight: bold; }
   
@@ -221,8 +230,8 @@ def build_report_html(s, format_value, exam_num):
 </body>
 </html>"""
 
-    # استبدال النصوص والبيانات بشكل آمن
-    html = html_template.replace("__LOGO_URL__", logo_url)
+    # استبدال البيانات
+    html = html_template.replace("__LOGO_URL__", logo_b64)
     html = html.replace("__DEC_COLOR__", dec_color)
     html = html.replace("__EXAM_TITLE__", exam_title)
     html = html.replace("__STUDENT_NAME__", str(s.get('الاسم', '')))
@@ -247,7 +256,7 @@ def build_report_html(s, format_value, exam_num):
 
     return html
 
-# دالة مساعدة لتقريب المعدلات
+# دالة مساعدة لتقريب الأرقام والمعدلات
 def format_value(val):
     try:
         return round(float(val), 2)
@@ -263,13 +272,13 @@ else:
     try:
         df = pd.read_excel(EXCEL_FILE)
         
-        # تهيئة الـ Session State لحفظ بيانات الطالب لمنع اختفاء النتائج عند التنقل
+        # تهيئة الـ Session State
         if "student_data" not in st.session_state:
             st.session_state.student_data = None
         if "searched" not in st.session_state:
             st.session_state.searched = False
 
-        # حقل المدخلات للبحث
+        # حقل مدخلات البحث
         query = st.text_input("أدخل رقم التلميذ أو الاسم الكامل:", placeholder="مثال: 10 أو أحمد محمد")
         
         if st.button("استعلام"):
@@ -288,7 +297,7 @@ else:
             else:
                 st.info("يرجى كتابة الاسم أو الرقم أولاً.")
 
-        # عرض البيانات في حالة الاستعلام الناجح وحفظها في الجلسة
+        # عرض النتائج المسترجعة
         if st.session_state.searched and st.session_state.student_data:
             s = st.session_state.student_data
             
@@ -304,7 +313,7 @@ else:
 
             tab1, tab2, tab3 = st.tabs(["📝 الامتحان الأول", "📝 الامتحان الثاني", "🏆 الامتحان الأخير"])
             
-            # --- خانة الامتحان الأول ---
+            # --- الامتحان الأول ---
             with tab1:
                 st.subheader("📊 كشف درجات الامتحان الأول")
                 labels1 = [sub for sub in subjects_list]
@@ -319,7 +328,7 @@ else:
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels1, 'النتيجة': values1}))
 
-                report1_html = build_report_html(s, format_value, exam_num=1)
+                report1_html = build_report_html(s, format_value, exam_num=1, logo_b64=logo_base64)
                 st.download_button(
                     label="🖨️ تحميل كشف درجات الامتحان الأول للطباعة",
                     data=report1_html,
@@ -327,7 +336,7 @@ else:
                     mime="text/html"
                 )
 
-            # --- خانة الامتحان الثاني ---
+            # --- الامتحان الثاني ---
             with tab2:
                 st.subheader("📊 كشف درجات الامتحان الثاني")
                 labels2 = [sub for sub in subjects_list]
@@ -342,7 +351,7 @@ else:
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels2, 'النتيجة': values2}))
 
-                report2_html = build_report_html(s, format_value, exam_num=2)
+                report2_html = build_report_html(s, format_value, exam_num=2, logo_b64=logo_base64)
                 st.download_button(
                     label="🖨️ تحميل كشف درجات الامتحان الثاني للطباعة",
                     data=report2_html,
@@ -350,7 +359,7 @@ else:
                     mime="text/html"
                 )
 
-            # --- خانة الامتحان الأخير والنهائي ---
+            # --- الامتحان الأخير والنهائي ---
             with tab3:
                 st.subheader("📊 كشف درجات الامتحان الأخير والنهائي")
                 labels3 = [sub for sub in subjects_list]
@@ -368,7 +377,7 @@ else:
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels3, 'النتيجة': values3}))
                 
-                report3_html = build_report_html(s, format_value, exam_num=3)
+                report3_html = build_report_html(s, format_value, exam_num=3, logo_b64=logo_base64)
                 st.download_button(
                     label="🖨️ تحميل كشف درجات الامتحان النهائي للطباعة",
                     data=report3_html,
