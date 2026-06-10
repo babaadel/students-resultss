@@ -2,166 +2,69 @@ import streamlit as st
 import pandas as pd
 import os
 
-# 1. إعدادات الصفحة وجعل التخطيط متجاوباً تلقائياً
-st.set_page_config(page_title="منصة نتائج التلاميذ", page_icon="🎓", layout="centered")
+st.set_page_config(page_title="بوابة نتائج التلاميذ", page_icon="🎓", layout="centered")
 
-# 2. تصميم CSS محسن بالكامل لحل مشكلة التجاوب والألوان على الهواتف
 st.markdown("""
-    <style>
-    .stApp { direction: rtl; text-align: right; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    
-    /* تنسيق زر الاستعلام الأساسي */
-    div.stButton > button { width: 100%; border-radius: 12px; background-color: #2563eb; color: white; height: 3.2em; font-weight: bold; font-size: 16px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    div.stButton > button:hover { background-color: #1d4ed8; }
-    
-    /* تنسيق علامات التبويب والخانات لتكون واضحة وجذابة على الهاتف */
-    button[data-baseweb="tab"] { font-size: 16px !important; font-weight: bold !important; padding: 12px 20px !important; }
-    
-    /* تنسيق رسائل النجاح والرسوب بخلفيات ناعمة ونصوص واضحة */
-    .success-box { color: #15803d; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
-    .fail-box { color: #b91c1c; background-color: #fef2f2; border: 1px solid #fecaca; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
-    
-    /* تحسين جداول البيانات وعرضها على الجوال */
-    .stTable { width: 100% !important; border-radius: 10px; overflow: hidden; }
-    </style>
-    """, unsafe_allow_html=True)
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 
-st.title("🎓 بوابة نتائج التلاميذ")
-st.write("استخدم الاسم أو الرقم للاستعلام عن النتيجة")
+.stApp {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+}
 
-# اسم ملف البيانات الثابت
-EXCEL_FILE = 'results.xlsx'
+/* ── زر البحث ── */
+div.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    background-color: #1a3c5e;
+    color: white;
+    height: 3.2em;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: background 0.2s;
+}
+div.stButton > button:hover { background-color: #2c6e49; }
 
-# 3. التحقق من وجود الملف
-if not os.path.exists(EXCEL_FILE):
-    st.error("⚠️ ملف النتائج (results.xlsx) غير موجود. يرجى رفعه في GitHub.")
-else:
-    try:
-        df = pd.read_excel(EXCEL_FILE)
-        
-        # مدخلات البحث (الاسم أو الرقم)
-        query = st.text_input("أدخل رقم التلميذ أو الاسم الكامل:", placeholder="مثال: 10 أو أحمد محمد")
-        
-        if st.button("استعلام"):
-            if query:
-                # تنظيف النص وتغيير نوع البيانات للبحث المرن
-                q = str(query).strip()
-                match = df[(df['الرقم'].astype(str).str.strip() == q) | 
-                           (df['الاسم'].str.strip().str.contains(q, case=False, na=False))]
-                
-                if not match.empty:
-                    s = match.iloc[0].to_dict() # جلب التلميذ الأول المتطابق
-                    
-                    st.divider()
-                    st.header(f"مرحباً، {s.get('الاسم', 'أيها التلميذ')}")
-                    st.info(f"رقم التلميذ: {s.get('الرقم', 'غير متوفر')}")
+/* ── التبويبات ── */
+button[data-baseweb="tab"] {
+    font-size: 15px !important;
+    font-weight: bold !important;
+    padding: 10px 18px !important;
+}
 
-                    # دالة مساعدة لتقريب المعدلات والدرجات لرقمين فقط بعد الفاصلة
-                    def format_value(val):
-                        try:
-                            return round(float(val), 2)
-                        except (ValueError, TypeError):
-                            return val if pd.notna(val) else 'غير متوفر'
+/* ── رسائل النجاح والرسوب ── */
+.success-box {
+    color: #15803d;
+    background-color: #f0fdf4;
+    border: 2px solid #4ade80;
+    padding: 20px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 16px 0;
+    font-family: 'Amiri', serif;
+}
+.fail-box {
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 2px solid #fca5a5;
+    padding: 20px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 16px 0;
+    font-family: 'Amiri', serif;
+}
 
-                    # قائمة المواد الثابتة المطلوبة بكل امتحان
-                    subjects_list = [
-                        'اللغة العربية', 'التربية الاسلامية', 'الرياضيات', 'الفرنسية', 
-                        'العلوم الطبيعية', 'التاريخ والجغرافيا', 'التربية الفنية', 
-                        'التربية المدنية', 'الرياضة البدنية'
-                    ]
-
-                    # إنشاء الخانات الثلاث المباشرة (الامتحانات)
-                    tab1, tab2, tab3 = st.tabs(["📝 الامتحان الأول", "📝 الامتحان الثاني", "🏆 الامتحان الأخير"])
-                    
-                    # --- خانة الامتحان الأول ---
-                    with tab1:
-                        st.subheader("📊 كشف درجات الامتحان الأول")
-                        labels1 = []
-                        values1 = []
-                        
-                        for sub in subjects_list:
-                            labels1.append(sub)
-                            values1.append(format_value(s.get(f'{sub} 1')))
-                        
-                        # إضافة المجموع ثم معدل الامتحان الأول ثم الرتبة والقرار مباشرة
-                        labels1.extend(['المجموع', 'معدل الامتحان الأول', 'الرتبة', 'القرار'])
-                        values1.extend([
-                            format_value(s.get('المجموع 1')),
-                            format_value(s.get('معدل الامتحان الأول')),
-                            s.get('الرتبة 1', 'غير متوفر'),
-                            s.get('القرار 1', 'غير متوفر')
-                        ])
-                            
-                        st.table(pd.DataFrame({'المادة / البيان': labels1, 'النتيجة': values1}))
-
-                    # --- خانة الامتحان الثاني ---
-                    with tab2:
-                        st.subheader("📊 كشف درجات الامتحان الثاني")
-                        labels2 = []
-                        values2 = []
-                        
-                        for sub in subjects_list:
-                            labels2.append(sub)
-                            values2.append(format_value(s.get(f'{sub} 2')))
-                        
-                        # إضافة المجموع ثم معدل الامتحان الثاني ثم الرتبة والقرار مباشرة
-                        labels2.extend(['المجموع', 'معدل الامتحان الثاني', 'الرتبة', 'القرار'])
-                        values2.extend([
-                            format_value(s.get('المجموع 2')),
-                            format_value(s.get('معدل الامتحان الثاني')),
-                            s.get('الرتبة 2', 'غير متوفر'),
-                            s.get('القرار 2', 'غير متوفر')
-                        ])
-                            
-                        st.table(pd.DataFrame({'المادة / البيان': labels2, 'النتيجة': values2}))
-
-                    # --- خانة الامتحان الأخير والنهائي ---
-                    with tab3:
-                        st.subheader("📊 كشف درجات الامتحان الأخير والنهائي")
-                        labels3 = []
-                        values3 = []
-                        
-                        # عرض درجات مواد الامتحان الثالث
-                        for sub in subjects_list:
-                            labels3.append(sub)
-                            values3.append(format_value(s.get(f'{sub} 3')))
-                        
-                        # التدرج السنوي الشامل والكامل في نهاية جدول الامتحان الأخير حصراً
-                        labels3.extend([
-                            'المجموع', 
-                            'معدل الامتحان الأول', 
-                            'معدل الامتحان الثاني', 
-                            'معدل الامتحان الأخير', 
-                            'المعدل العام', 
-                            'الرتبة العامة', 
-                            'القرار العام'
-                        ])
-                        values3.extend([
-                            format_value(s.get('المجموع 3')),
-                            format_value(s.get('معدل الامتحان الأول')),
-                            format_value(s.get('معدل الامتحان الثاني')),
-                            format_value(s.get('معدل الامتحان الأخير')),
-                            format_value(s.get('المعدل العام')),
-                            s.get('الرتبة العامة', 'غير متوفر'),
-                            s.get('القرار العام', 'غير متوفر')
-                        ])
-                            
-                        st.table(pd.DataFrame({'المادة / البيان': labels3, 'النتيجة': values3}))
-                        
-                        # عرض رسالة النجاح الكبرى بناءً على النتيجة النهائية للعام الدراسي (القرار العام)
-                        dec_general = str(s.get('القرار العام', ''))
-                        if "ناجح" in dec_general or "منتقل" in dec_general:
-                            st.markdown(f'<div class="success-box">🏆 النتيجة النهائية للعام الدراسي: {dec_general} 🎈</div>', unsafe_allow_html=True)
-                            st.balloons()
-                        elif "راسب" in dec_general or "مكرر" in dec_general:
-                            st.markdown(f'<div class="fail-box">😔 النتيجة النهائية للعام الدراسي: {dec_general} 💔</div>', unsafe_allow_html=True)
-                                
-                else:
-                    st.error(f"❌ لم يتم العثور على نتيجة لـ '{query}'.")
-            else:
-                st.info("يرجى كتابة الاسم أو الرقم أولاً.")
-    except Exception as e:
-        st.error(f"حدث خطأ في قراءة البيانات: {e}").kashf-wrapper {
+/* ── بطاقة الكشف الرسمي ── */
+.kashf-wrapper {
     border: 3px solid #1a3c5e;
     border-radius: 6px;
     overflow: hidden;
@@ -554,4 +457,3 @@ if search or query:
             label = verdict_general or "راسب"
             st.markdown(f'<div class="fail-box">😔 النتيجة النهائية للعام الدراسي: {label}</div>',
                         unsafe_allow_html=True)
-
