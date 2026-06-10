@@ -5,7 +5,7 @@ import os
 # 1. إعدادات الصفحة وجعل التخطيط متجاوباً تلقائياً
 st.set_page_config(page_title="منصة نتائج التلاميذ", page_icon="🎓", layout="centered")
 
-# 2. تصميم CSS محسن بالكامل
+# 2. تصميم CSS محسن بالكامل لواجهة الموقع
 st.markdown("""
     <style>
     .stApp { direction: rtl; text-align: right; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -17,7 +17,7 @@ st.markdown("""
     /* تنسيق علامات التبويب والخانات */
     button[data-baseweb="tab"] { font-size: 16px !important; font-weight: bold !important; padding: 12px 20px !important; }
     
-    /* تنسيق رسائل النجاح والرسوب */
+    /* تنسيق رسائل النجاح والرسوب في الواجهة */
     .success-box { color: #15803d; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
     .fail-box { color: #b91c1c; background-color: #fef2f2; border: 1px solid #fecaca; padding: 18px; border-radius: 14px; text-align: center; font-size: 18px; font-weight: bold; margin: 15px 0; }
     
@@ -29,7 +29,7 @@ st.markdown("""
 st.title("🎓 بوابة نتائج التلاميذ")
 st.write("استخدم الاسم أو الرقم للاستعلام عن النتيجة")
 
-# ===== دالة توليد HTML لشكلية الكشف الرسمي =====
+# ===== دالة توليد HTML لشكلية الكشف الرسمي الموريتاني المحسن =====
 def build_report_html(s, format_value, exam_num):
     if exam_num == 1:
         exam_title = "امتحان الفصل الأول"
@@ -64,7 +64,9 @@ def build_report_html(s, format_value, exam_num):
     else:
         dec_color = "#dc2626"
 
-    # استخدام كود HTML نظيف وقالب مبني بـ الـ placeholders لتفادي تعارض f-string مع الـ CSS
+    # رابط الشعار الموريتاني الرسمي الدائري الملون
+    logo_url = "https://upload.wikimedia.org/wikipedia/commons/4/43/Seal_of_Mauritania.svg"
+
     html_template = """<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -74,25 +76,45 @@ def build_report_html(s, format_value, exam_num):
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; direction: rtl; background: white; color: #111; padding: 20px; }
   .outer-border { border: 3px solid #000; padding: 10px; max-width: 780px; margin: auto; }
-  .top-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
-  .top-header .col { font-size: 13px; line-height: 1.9; }
+  
+  /* ترويسة خلفية العلم الموريتاني المتدرج */
+  .top-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background: linear-gradient(135deg, #d2143a 0%, #00a95c 15%, #00a95c 85%, #d2143a 100%);
+    padding: 15px; 
+    border-radius: 8px;
+    border: 2px solid #ffca28;
+    color: white;
+    margin-bottom: 15px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .top-header .col { font-size: 13px; line-height: 1.8; font-weight: 500; }
   .top-header .col-center { text-align: center; }
-  .top-header strong { font-size: 14px; }
-  .motto { font-size: 12px; color: #555; text-align: left; margin-bottom: 4px; }
-  .exam-title { text-align: center; font-size: 22px; font-weight: bold; margin: 10px 0 4px 0; border-bottom: 1px solid #ccc; padding-bottom: 6px; }
-  .kashf-title { text-align: center; background: #d4edda; border: 1px solid #aaa; border-radius: 6px; font-size: 20px; font-weight: bold; padding: 6px 20px; margin: 8px auto; width: fit-content; }
-  .student-info { display: flex; justify-content: space-between; font-size: 13px; margin: 10px 0; padding: 0 4px; }
-  .student-info span { font-weight: bold; color: #1a56db; }
-  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
-  th { background: #f0f0f0; border: 1px solid #333; padding: 7px 10px; text-align: center; }
-  td { border: 1px solid #333; padding: 6px 10px; }
-  .avg-cell { text-align: center; font-weight: bold; color: #c00; font-size: 15px; }
-  .decision-cell { text-align: center; font-weight: bold; font-size: 20px; color: __DEC_COLOR__; }
-  .footer-row { display: flex; justify-content: space-between; margin-top: 20px; font-size: 14px; font-weight: bold; border-top: 1px solid #aaa; padding-top: 10px; }
+  .top-header .col-center img { width: 90px; height: 90px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3)); }
+  .top-header strong { font-size: 14px; color: #ffca28; }
+  .motto { font-size: 12px; color: #eaeaea; text-align: left; margin-bottom: 4px; font-weight: bold; }
+  
+  /* تنسيق موحد للعناوين وبنفس الحجم */
+  .titles-container { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 15px 0; }
+  .exam-title { text-align: center; font-size: 20px; font-weight: bold; color: #111; background: #f8f9fa; padding: 6px 25px; border-radius: 6px; border: 1px solid #ccc; width: fit-content; }
+  .kashf-title { text-align: center; font-size: 20px; font-weight: bold; color: #15803d; background: #e8f5e9; padding: 6px 25px; border-radius: 6px; border: 1px solid #a5d6a7; width: fit-content; }
+  
+  .student-info { display: flex; justify-content: space-between; font-size: 13px; margin: 15px 0; padding: 8px; background: #f8f9fa; border-radius: 6px; border: 1px solid #eee; }
+  .student-info span { font-weight: bold; color: #2563eb; }
+  
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  th { background: #f1f5f9; border: 1px solid #334155; padding: 8px 10px; text-align: center; color: #1e293b; font-weight: bold; }
+  td { border: 1px solid #334155; padding: 7px 10px; }
+  .avg-cell { text-align: center; font-weight: bold; color: #b91c1c; font-size: 14px; background: #fffaf0; }
+  .decision-cell { text-align: center; font-weight: bold; font-size: 22px; color: __DEC_COLOR__; }
+  .footer-row { display: flex; justify-content: space-between; margin-top: 25px; font-size: 14px; font-weight: bold; border-top: 2px dashed #ccc; padding-top: 15px; }
 </style>
 </head>
 <body>
 <div class="outer-border">
+  
   <div class="top-header">
     <div class="col" style="text-align:right;">
       <strong>الجمهورية الإسلامية الموريتانية</strong><br>
@@ -100,7 +122,9 @@ def build_report_html(s, format_value, exam_num):
       الإدارة الجهوية بولاية لعصابه<br>
       مفتشية التعليم بمقاطعة كنكوصة
     </div>
-    <div class="col col-center"><div style="font-size:48px;">🇲🇷</div></div>
+    <div class="col col-center">
+      <img src="__LOGO_URL__" alt="الشعار الرسمي">
+    </div>
     <div class="col" style="text-align:left;">
       <div class="motto">شـرف – إخـاء – عـدل</div>
       <strong>العام الدراسي: 2025\\2026</strong><br>
@@ -109,8 +133,10 @@ def build_report_html(s, format_value, exam_num):
     </div>
   </div>
 
-  <div class="exam-title">__EXAM_TITLE__</div>
-  <div class="kashf-title">كشف الدرجات</div>
+  <div class="titles-container">
+    <div class="exam-title">__EXAM_TITLE__</div>
+    <div class="kashf-title">كشف الدرجات</div>
+  </div>
 
   <div class="student-info">
     <div>الاسم الكامل: <span>__STUDENT_NAME__</span></div>
@@ -128,59 +154,59 @@ def build_report_html(s, format_value, exam_num):
     </thead>
     <tbody>
       <tr>
-        <td>اللغة العربية</td>
+        <td style="font-weight: 500;">اللغة العربية</td>
         <td style="text-align:center;">__ARABIC__</td>
         <td rowspan="3" class="avg-cell">__AVG1__\\20</td>
       </tr>
       <tr>
-        <td>التربية الإسلامية</td>
+        <td style="font-weight: 500;">التربية الإسلامية</td>
         <td style="text-align:center;">__ISLAMIC__</td>
       </tr>
       <tr>
-        <td>الرياضيات</td>
+        <td style="font-weight: 500;">الرياضيات</td>
         <td style="text-align:center;">__MATH__</td>
       </tr>
       <tr>
-        <td>الفرنسية</td>
+        <td style="font-weight: 500;">الفرنسية</td>
         <td style="text-align:center;">__FRENCH__</td>
-        <th style="background:#f0f0f0;">الملاحظات</th>
+        <th style="background:#f1f5f9; color: #1e293b;">الملاحظات</th>
       </tr>
       <tr>
-        <td>العلوم الطبيعية</td>
+        <td style="font-weight: 500;">العلوم الطبيعية</td>
         <td style="text-align:center;">__SCIENCE__</td>
         <td rowspan="3" class="avg-cell">__AVG2__\\20</td>
       </tr>
       <tr>
-        <td>التاريخ والجغرافيا</td>
+        <td style="font-weight: 500;">التاريخ والجغرافيا</td>
         <td style="text-align:center;">__HISTORY__</td>
       </tr>
       <tr>
-        <td>التربية المدنية</td>
+        <td style="font-weight: 500;">التربية المدنية</td>
         <td style="text-align:center;">__CIVICS__</td>
       </tr>
       <tr>
-        <td>التربية الفنية</td>
+        <td style="font-weight: 500;">التربية الفنية</td>
         <td style="text-align:center;">__ART__</td>
-        <th style="background:#f0f0f0;">معدل الامتحان الحالي</th>
+        <th style="background:#f1f5f9; color: #1e293b;">معدل الامتحان الحالي</th>
       </tr>
       <tr>
-        <td>الرياضة البدنية</td>
+        <td style="font-weight: 500;">الرياضة البدنية</td>
         <td style="text-align:center;">__SPORT__</td>
         <td rowspan="4" class="avg-cell">__AVG3__\\20</td>
       </tr>
       <tr>
-        <td>المجموع</td>
-        <td style="text-align:center;">__TOTAL__\\200</td>
+        <td style="font-weight: bold;">المجموع</td>
+        <td style="text-align:center; font-weight: bold;">__TOTAL__\\200</td>
       </tr>
       <tr>
-        <td style="font-weight:bold;">المعدل بالفصل</td>
-        <td style="text-align:center;font-weight:bold;color:#c00;">__EXAM_AVG__\\20</td>
+        <td style="font-weight:bold; background: #fff1f2;">المعدل بالفصل</td>
+        <td style="text-align:center;font-weight:bold;color:#b91c1c; background: #fff1f2;">__EXAM_AVG__\\20</td>
       </tr>
       <tr>
-        <td colspan="2" style="text-align:center;">المعدل العام: <strong style="color:#16a34a;">__AVG_GENERAL__</strong></td>
+        <td colspan="2" style="text-align:center; font-size: 14px;">المعدل العام: <strong style="color:#16a34a; font-size: 16px;">__AVG_GENERAL__</strong></td>
       </tr>
       <tr>
-        <td colspan="2" style="text-align:center;">الرتبة: <strong>__RANK__</strong></td>
+        <td colspan="2" style="text-align:center; font-size: 14px; font-weight: bold;">الرتبة: <strong style="font-size: 16px; color:#2563eb;">__RANK__</strong></td>
         <td class="decision-cell">__DECISION__</td>
       </tr>
     </tbody>
@@ -195,8 +221,9 @@ def build_report_html(s, format_value, exam_num):
 </body>
 </html>"""
 
-    # استبدال النصوص يدوياً بشكل آمن تماماً
-    html = html_template.replace("__DEC_COLOR__", dec_color)
+    # استبدال النصوص والبيانات بشكل آمن
+    html = html_template.replace("__LOGO_URL__", logo_url)
+    html = html.replace("__DEC_COLOR__", dec_color)
     html = html.replace("__EXAM_TITLE__", exam_title)
     html = html.replace("__STUDENT_NAME__", str(s.get('الاسم', '')))
     html = html.replace("__STUDENT_ID__", str(s.get('الرقم', '')))
@@ -220,7 +247,7 @@ def build_report_html(s, format_value, exam_num):
 
     return html
 
-# دالة مساعدة لتنسيق الأرقام
+# دالة مساعدة لتقريب المعدلات
 def format_value(val):
     try:
         return round(float(val), 2)
@@ -236,13 +263,13 @@ else:
     try:
         df = pd.read_excel(EXCEL_FILE)
         
-        # تهيئة الـ Session State لحفظ بيانات الطالب النشط وحالة إرسال النموذج
+        # تهيئة الـ Session State لحفظ بيانات الطالب لمنع اختفاء النتائج عند التنقل
         if "student_data" not in st.session_state:
             st.session_state.student_data = None
         if "searched" not in st.session_state:
             st.session_state.searched = False
 
-        # حقل المدخلات
+        # حقل المدخلات للبحث
         query = st.text_input("أدخل رقم التلميذ أو الاسم الكامل:", placeholder="مثال: 10 أو أحمد محمد")
         
         if st.button("استعلام"):
@@ -261,7 +288,7 @@ else:
             else:
                 st.info("يرجى كتابة الاسم أو الرقم أولاً.")
 
-        # عرض النتائج في حال تم العثور على طالب وموجود في الـ session_state
+        # عرض البيانات في حالة الاستعلام الناجح وحفظها في الجلسة
         if st.session_state.searched and st.session_state.student_data:
             s = st.session_state.student_data
             
@@ -277,7 +304,7 @@ else:
 
             tab1, tab2, tab3 = st.tabs(["📝 الامتحان الأول", "📝 الامتحان الثاني", "🏆 الامتحان الأخير"])
             
-            # --- الامتحان الأول ---
+            # --- خانة الامتحان الأول ---
             with tab1:
                 st.subheader("📊 كشف درجات الامتحان الأول")
                 labels1 = [sub for sub in subjects_list]
@@ -300,7 +327,7 @@ else:
                     mime="text/html"
                 )
 
-            # --- الامتحان الثاني ---
+            # --- خانة الامتحان الثاني ---
             with tab2:
                 st.subheader("📊 كشف درجات الامتحان الثاني")
                 labels2 = [sub for sub in subjects_list]
@@ -323,7 +350,7 @@ else:
                     mime="text/html"
                 )
 
-            # --- الامتحان الأخير والنهائي ---
+            # --- خانة الامتحان الأخير والنهائي ---
             with tab3:
                 st.subheader("📊 كشف درجات الامتحان الأخير والنهائي")
                 labels3 = [sub for sub in subjects_list]
