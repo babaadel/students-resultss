@@ -18,6 +18,15 @@ def get_image_base64(path):
 LOGO_FILE = "logo.png"
 logo_base64 = get_image_base64(LOGO_FILE)
 
+# شعار SVG احتياطي مضمّن (يُستخدم إذا لم يوجد logo.png)
+FALLBACK_LOGO = """data:image/svg+xml;base64,""" + base64.b64encode(b"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#ffd700" stroke="#006233" stroke-width="3"/>
+  <circle cx="50" cy="50" r="40" fill="#006233"/>
+  <polygon points="50,18 56,36 74,36 60,47 65,65 50,54 35,65 40,47 26,36 44,36" fill="#ffd700"/>
+</svg>""").decode()
+
+DISPLAY_LOGO = logo_base64 if logo_base64 else FALLBACK_LOGO
+
 # 2. تصميم CSS الكامل للموقع
 st.markdown(f"""
     <style>
@@ -245,7 +254,7 @@ st.markdown(f"""
             <div class="sub-title">مفتشية التعليم بمقاطعة كنكوصة</div>
         </div>
         <div class="header-center">
-            <img src="{logo_base64 if logo_base64 else 'https://upload.wikimedia.org/wikipedia/commons/4/43/Emblem_of_Mauritania.svg'}" alt="الشعار الرسمي">
+            <img src="{DISPLAY_LOGO}" alt="الشعار الرسمي" onerror="this.style.display='none'">
         </div>
         <div class="header-left">
             <div class="motto">شـرف – إخـاء – عـدل</div>
@@ -566,7 +575,7 @@ def build_report_html(s, format_value, exam_num, logo_b64):
       مفتشية التعليم بمقاطعة كنكوصة
     </div>
     <div class="col col-center">
-      <img src="__LOGO_URL__" alt="الشعار الرسمي">
+      <img src="__LOGO_URL__" alt="الشعار" width="90" height="90" style="border-radius:50%;border:2px solid #ffd700;background:white;padding:3px;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.4));object-fit:contain;">
     </div>
     <div class="col col-left">
       <div class="motto">شـرف – إخـاء – عـدل</div>
@@ -593,7 +602,7 @@ def build_report_html(s, format_value, exam_num, logo_b64):
     </div>
     <div class="info-item">
       <span class="info-label">الرقم المدرسي:</span>
-      <span class="info-value">__STUDENT_ID__</span>
+      <span class="info-value"></span>
     </div>
     <div class="info-item">
       <span class="info-label">رقم النداء:</span>
@@ -606,18 +615,25 @@ def build_report_html(s, format_value, exam_num, logo_b64):
     <table>
       <thead>
         <tr>
-          <th style="width:34%;">المواد</th>
-          <th style="width:22%;">الدرجات</th>
-          <th style="width:22%;">معدلات الفصول</th>
-          <th style="width:22%;">الملاحظات</th>
+          <th style="width:30%;">المواد</th>
+          <th style="width:20%;">الدرجات</th>
+          <th style="width:25%;">معدلات الفصول</th>
+          <th style="width:25%;">الملاحظات</th>
         </tr>
       </thead>
       <tbody>
+
+        <!-- ===== مجموعة الامتحان الأول ===== -->
         <tr>
           <td class="subject-cell">اللغة العربية</td>
           <td class="score-cell">__ARABIC__</td>
-          <td rowspan="3" class="avg-cell">__AVG1__ / 20</td>
-          <td rowspan="3"></td>
+          <td rowspan="3" class="avg-cell">
+            <div style="font-size:11px; color:#6b7280; font-weight:500; margin-bottom:4px;">معدل الامتحان الأول</div>
+            <div style="font-size:16px; color:#b91c1c; font-weight:700;">__AVG1__ / 20</div>
+          </td>
+          <td rowspan="3" style="text-align:center; vertical-align:middle; font-size:12px; color:#4b5563; font-style:italic; background:#fafafa;">
+            العلم يرفع بيتا لا عماد له<br>والجهل يهدم بيت العز والشرف
+          </td>
         </tr>
         <tr>
           <td class="subject-cell">التربية الإسلامية</td>
@@ -627,17 +643,29 @@ def build_report_html(s, format_value, exam_num, logo_b64):
           <td class="subject-cell">الرياضيات</td>
           <td class="score-cell">__MATH__</td>
         </tr>
+
+        <!-- ===== مجموعة الامتحان الثاني ===== -->
         <tr>
           <td class="subject-cell">الفرنسية</td>
           <td class="score-cell">__FRENCH__</td>
-          <td class="avg-cell">__AVG2__ / 20</td>
-          <td class="remarks-header">الملاحظات</td>
+          <td class="avg-cell">
+            <div style="font-size:11px; color:#6b7280; font-weight:500; margin-bottom:4px;">معدل الامتحان الثاني</div>
+            <div style="font-size:16px; color:#b91c1c; font-weight:700;">__AVG2__ / 20</div>
+          </td>
+          <td style="text-align:center; font-weight:600; font-size:12px; color:#78350f; background:#fefce8; border:1px solid #d1d5db;">
+            الملاحظات
+          </td>
         </tr>
+
+        <!-- ===== مجموعة الامتحان الثالث ===== -->
         <tr>
           <td class="subject-cell">العلوم الطبيعية</td>
           <td class="score-cell">__SCIENCE__</td>
-          <td rowspan="3" class="avg-cell">__AVG3__ / 20</td>
-          <td rowspan="3"></td>
+          <td rowspan="3" class="avg-cell">
+            <div style="font-size:11px; color:#6b7280; font-weight:500; margin-bottom:4px;">معدل الامتحان الثالث</div>
+            <div style="font-size:16px; color:#b91c1c; font-weight:700;">__AVG3__ / 20</div>
+          </td>
+          <td rowspan="3" style="background:#fafafa; border:1px solid #d1d5db;"></td>
         </tr>
         <tr>
           <td class="subject-cell">التاريخ والجغرافيا</td>
@@ -647,18 +675,25 @@ def build_report_html(s, format_value, exam_num, logo_b64):
           <td class="subject-cell">التربية المدنية</td>
           <td class="score-cell">__CIVICS__</td>
         </tr>
+
+        <!-- ===== معدل الامتحان الحالي ===== -->
         <tr>
           <td class="subject-cell">التربية الفنية</td>
           <td class="score-cell">__ART__</td>
-          <td colspan="2" style="text-align:center; font-size:12.5px; color:#4b5563; background:#fffdf0;">
+          <td colspan="2" style="text-align:center; font-size:12px; color:#4b5563; background:#fffdf0; border:1px solid #d1d5db; font-weight:600;">
             معدل الامتحان الحالي
           </td>
         </tr>
+
+        <!-- ===== الرياضة والمجموع والمعدل بالفصل ===== -->
         <tr>
           <td class="subject-cell">الرياضة البدنية</td>
           <td class="score-cell">__SPORT__</td>
-          <td rowspan="3" class="avg-cell" style="font-size:17px;">__EXAM_AVG__ / 20</td>
-          <td rowspan="3"></td>
+          <td rowspan="3" class="avg-cell">
+            <div style="font-size:11px; color:#6b7280; font-weight:500; margin-bottom:4px;">المعدل بالفصل</div>
+            <div style="font-size:18px; color:#b91c1c; font-weight:700;">__EXAM_AVG__ / 20</div>
+          </td>
+          <td rowspan="3" style="background:#fafafa; border:1px solid #d1d5db;"></td>
         </tr>
         <tr class="total-row">
           <td class="total-label">المجموع</td>
@@ -668,18 +703,22 @@ def build_report_html(s, format_value, exam_num, logo_b64):
           <td style="font-weight:700; color:#b91c1c; background:#fff1f2;">المعدل بالفصل</td>
           <td style="text-align:center; font-weight:700; color:#b91c1c; background:#fff1f2; font-size:14px;">__EXAM_AVG__ / 20</td>
         </tr>
+
+        <!-- ===== المعدل العام ===== -->
         <tr>
-          <td colspan="3" class="general-avg-row" style="border:1px solid #d1d5db; padding:10px; text-align:center; font-size:14px; font-weight:600; color:#374151; background:linear-gradient(135deg,#eff6ff,#fff);">
-            المعدل العام: <span class="general-avg-value">__AVG_GENERAL__</span>
+          <td colspan="2" style="text-align:center; font-size:14px; font-weight:600; color:#374151; background:linear-gradient(135deg,#eff6ff,#fff); border:1px solid #d1d5db; padding:10px;">
+            المعدل العام: <span style="color:#15803d; font-size:17px; font-weight:700;">__AVG_GENERAL__</span>
           </td>
-          <td></td>
-        </tr>
-        <tr class="rank-row">
-          <td colspan="2" class="rank-cell" style="border:1px solid #d1d5db; padding:10px;">
-            الرتبة: <span class="rank-value">__RANK__</span>
+          <td colspan="2" style="background:#f8fafc; border:1px solid #d1d5db; padding:10px; text-align:center; font-size:14px; font-weight:600;">
+            الرتبة: <span style="color:#1d4ed8; font-size:16px; font-weight:700;">__RANK__</span>
           </td>
-          <td colspan="2" class="decision-cell">__DECISION__</td>
         </tr>
+
+        <!-- ===== القرار ===== -->
+        <tr>
+          <td colspan="4" class="decision-cell" style="padding:14px;">__DECISION__</td>
+        </tr>
+
       </tbody>
     </table>
   </div>
@@ -694,7 +733,7 @@ def build_report_html(s, format_value, exam_num, logo_b64):
 </body>
 </html>"""
 
-    html = html_template.replace("__LOGO_URL__", logo_b64)
+    html = html_template.replace("__LOGO_URL__", logo_b64 if logo_b64 else "")
     html = html.replace("__DEC_COLOR__", dec_color)
     html = html.replace("__DEC_BG__", dec_bg)
     html = html.replace("__DEC_BORDER__", dec_border)
@@ -798,7 +837,7 @@ else:
                     s.get('القرار 1', 'غير متوفر')
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels1, 'النتيجة': values1}))
-                report1_html = build_report_html(s, format_value, exam_num=1, logo_b64=logo_base64)
+                report1_html = build_report_html(s, format_value, exam_num=1, logo_b64=DISPLAY_LOGO)
                 st.download_button(
                     label="🖨️ تحميل كشف الامتحان الأول للطباعة",
                     data=report1_html,
@@ -819,7 +858,7 @@ else:
                     s.get('القرار 2', 'غير متوفر')
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels2, 'النتيجة': values2}))
-                report2_html = build_report_html(s, format_value, exam_num=2, logo_b64=logo_base64)
+                report2_html = build_report_html(s, format_value, exam_num=2, logo_b64=DISPLAY_LOGO)
                 st.download_button(
                     label="🖨️ تحميل كشف الامتحان الثاني للطباعة",
                     data=report2_html,
@@ -844,7 +883,7 @@ else:
                     s.get('القرار العام', 'غير متوفر')
                 ])
                 st.table(pd.DataFrame({'المادة / البيان': labels3, 'النتيجة': values3}))
-                report3_html = build_report_html(s, format_value, exam_num=3, logo_b64=logo_base64)
+                report3_html = build_report_html(s, format_value, exam_num=3, logo_b64=DISPLAY_LOGO)
                 st.download_button(
                     label="🖨️ تحميل كشف الامتحان النهائي للطباعة",
                     data=report3_html,
