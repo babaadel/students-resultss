@@ -33,8 +33,11 @@ st.markdown(f"""
         direction: rtl;
         text-align: right;
         font-family: 'Cairo', 'Segoe UI', sans-serif;
-        background: linear-gradient(160deg, #006233 0%, #006233 40%, #cd2a3e 100%) !important;
+        background: #1a1f2e !important;
         min-height: 100vh;
+    }}
+    div[data-testid="stVerticalBlock"] > div {{
+        background: transparent !important;
     }}
 
     /* ===== رأسية الموقع - تصميم بوزارة التربية ===== */
@@ -112,9 +115,9 @@ st.markdown(f"""
         text-align: center;
         margin: 10px 0 25px 0;
         padding: 20px 15px;
-        background: rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
         border-radius: 14px;
-        border: 1px solid rgba(255,215,0,0.3);
+        border: 1px solid rgba(255,215,0,0.2);
         backdrop-filter: blur(4px);
     }}
     .portal-title-icon {{
@@ -147,23 +150,33 @@ st.markdown(f"""
 
     /* ===== صندوق البحث ===== */
     .search-container {{
-        background: rgba(255,255,255,0.95);
+        background: rgba(255,255,255,0.06);
         border-radius: 16px;
         padding: 28px 24px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         margin-bottom: 20px;
-        border: 1px solid rgba(255,215,0,0.4);
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
     }}
+
+    /* ===== نصوص عامة على الخلفية الداكنة ===== */
+    .stApp p, .stApp label, .stApp .stMarkdown {{
+        color: rgba(255,255,255,0.85) !important;
+    }}
+    h1, h2, h3 {{ color: #fde68a !important; }}
+    .stAlert {{ border-radius: 10px !important; }}
 
     /* ===== تنسيق حقل الإدخال ===== */
     .stTextInput > div > div > input {{
         border-radius: 10px !important;
-        border: 2px solid #006233 !important;
+        border: 2px solid rgba(255,255,255,0.2) !important;
         padding: 12px 16px !important;
         font-size: 15px !important;
         font-family: 'Cairo', sans-serif !important;
         text-align: right !important;
         direction: rtl !important;
+        background: rgba(255,255,255,0.9) !important;
+        color: #1f2937 !important;
     }}
     .stTextInput > div > div > input:focus {{
         border-color: #ffd700 !important;
@@ -226,11 +239,12 @@ st.markdown(f"""
 
     /* ===== بطاقة النتيجة ===== */
     .result-card {{
-        background: rgba(255,255,255,0.97);
+        background: rgba(255,255,255,0.05);
         border-radius: 16px;
         padding: 20px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,215,0,0.3);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
     }}
 
     /* ===== تنسيق علامات التبويب ===== */
@@ -244,7 +258,7 @@ st.markdown(f"""
     #MainMenu {{ visibility: hidden; }}
     footer {{ visibility: hidden; }}
     header {{ visibility: hidden; }}
-    .block-container {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; }}
+    .block-container {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 750px !important; background: transparent !important; }}
     </style>
 
     <!-- رأسية الموقع - تصميم وزارة التربية -->
@@ -613,25 +627,22 @@ def build_report_html(s, format_value, exam_num, logo_b64):
     <table>
       <thead>
         <tr>
-          <th style="width:30%;">المواد</th>
+          <th style="width:32%;">المواد</th>
           <th style="width:20%;">الدرجات</th>
-          <th style="width:25%;">معدل الفصل</th>
-          <th style="width:25%;">الملاحظات</th>
+          <th style="width:28%;">معدلات الفصول</th>
+          <th style="width:20%;">الملاحظات</th>
         </tr>
       </thead>
       <tbody>
 
-        <!-- صفوف 1-3: عربية + إسلامية + رياضيات -->
+        <!-- صف 1: عربية -->
         <tr>
           <td class="subject-cell">اللغة العربية</td>
           <td class="score-cell">__ARABIC__</td>
-          <td rowspan="3" class="avg-cell">
-            <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:4px;">معدل الامتحان الأول</div>
-            <div style="font-size:16px;color:#b91c1c;font-weight:700;">__AVG1__ / 20</div>
-          </td>
-          <td rowspan="3" style="text-align:center;vertical-align:middle;font-size:11.5px;color:#4b5563;font-style:italic;background:#fafafa;padding:8px;">
-            العلم يرفع بيتا لا عماد له<br>والجهل يهدم بيت العز والشرف
-          </td>
+          <!-- عمود المعدلات: يمتد كل صفوف المواد الـ9 -->
+          __AVG_COLUMN__
+          <!-- عمود الملاحظات: يمتد كل الصفوف ويحتوي القرار -->
+          __NOTES_COLUMN__
         </tr>
         <tr>
           <td class="subject-cell">التربية الإسلامية</td>
@@ -641,29 +652,13 @@ def build_report_html(s, format_value, exam_num, logo_b64):
           <td class="subject-cell">الرياضيات</td>
           <td class="score-cell">__MATH__</td>
         </tr>
-
-        <!-- صف 4: فرنسية + معدل الامتحان الثاني -->
         <tr>
           <td class="subject-cell">الفرنسية</td>
           <td class="score-cell">__FRENCH__</td>
-          <td class="avg-cell">
-            <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:4px;">معدل الامتحان الثاني</div>
-            <div style="font-size:16px;color:#b91c1c;font-weight:700;">__AVG2__ / 20</div>
-          </td>
-          <td style="text-align:center;font-weight:600;font-size:12px;color:#78350f;background:#fefce8;border:1px solid #d1d5db;vertical-align:middle;">
-            الملاحظات
-          </td>
         </tr>
-
-        <!-- صفوف 5-7: علوم + تاريخ + مدنية + معدل الامتحان الثالث -->
         <tr>
           <td class="subject-cell">العلوم الطبيعية</td>
           <td class="score-cell">__SCIENCE__</td>
-          <td rowspan="3" class="avg-cell">
-            <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:4px;">معدل الامتحان الثالث</div>
-            <div style="font-size:16px;color:#b91c1c;font-weight:700;">__AVG3__ / 20</div>
-          </td>
-          <td rowspan="3" style="background:#fafafa;border:1px solid #d1d5db;"></td>
         </tr>
         <tr>
           <td class="subject-cell">التاريخ والجغرافيا</td>
@@ -673,41 +668,33 @@ def build_report_html(s, format_value, exam_num, logo_b64):
           <td class="subject-cell">التربية المدنية</td>
           <td class="score-cell">__CIVICS__</td>
         </tr>
-
-        <!-- صف 8: فنية -->
         <tr>
           <td class="subject-cell">التربية الفنية</td>
           <td class="score-cell">__ART__</td>
-          <td colspan="2" style="text-align:center;font-size:12px;color:#4b5563;background:#fffdf0;border:1px solid #d1d5db;font-weight:600;vertical-align:middle;">
-            معدل الامتحان الحالي
-          </td>
         </tr>
-
-        <!-- صفوف 9-11: رياضة + مجموع + معدل بالفصل -->
         <tr>
           <td class="subject-cell">الرياضة البدنية</td>
           <td class="score-cell">__SPORT__</td>
-          <td rowspan="3" class="avg-cell">
-            <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:4px;">المعدل بالفصل</div>
-            <div style="font-size:18px;color:#b91c1c;font-weight:700;">__EXAM_AVG__ / 20</div>
-          </td>
-          <td rowspan="3" style="background:#fafafa;border:1px solid #d1d5db;"></td>
         </tr>
+
+        <!-- صف المجموع والمعدل -->
         <tr>
-          <td class="total-label">المجموع</td>
-          <td class="total-value" style="text-align:center;font-weight:700;color:#166534;font-size:14px;">__TOTAL__ / 200</td>
+          <td style="font-weight:700;">المجموع</td>
+          <td style="text-align:center;font-weight:700;color:#166534;font-size:14px;">__TOTAL__ / 200</td>
+          <td colspan="2" style="background:#f8fafc;border:1px solid #d1d5db;"></td>
         </tr>
         <tr>
           <td style="font-weight:700;color:#b91c1c;background:#fff1f2;">المعدل بالفصل</td>
-          <td style="text-align:center;font-weight:700;color:#b91c1c;background:#fff1f2;font-size:14px;">__EXAM_AVG__ / 20</td>
+          <td style="text-align:center;font-weight:700;color:#b91c1c;background:#fff1f2;font-size:15px;">__EXAM_AVG__ / 20</td>
+          <td colspan="2" style="background:#fff1f2;border:1px solid #d1d5db;"></td>
         </tr>
 
-        <!-- المعدل العام + الرتبة (يظهر في الفصل الأخير فقط) -->
+        <!-- صف المعدل العام والرتبة (فصل أخير فقط) -->
         __GENERAL_ROW__
 
-        <!-- القرار -->
+        <!-- القرار النهائي -->
         <tr>
-          <td colspan="4" class="decision-cell" style="padding:14px;">__DECISION__</td>
+          <td colspan="4" class="decision-cell" style="padding:16px;font-size:20px;">__DECISION__</td>
         </tr>
 
       </tbody>
@@ -744,13 +731,66 @@ def build_report_html(s, format_value, exam_num, logo_b64):
     html = html.replace("__EXAM_AVG__", str(exam_avg))
     html = html.replace("__DECISION__", str(decision_val))
 
-    # معدلات الفصول: يظهر فقط ما هو متاح حسب رقم الفصل
-    # الفصل 1: يظهر معدل الفصل 1 فقط، الفصل 2: معدل 1 + 2، الفصل 3: الثلاثة
-    html = html.replace("__AVG1__", str(avg1))
-    html = html.replace("__AVG2__", str(avg2) if exam_num >= 2 else "—")
-    html = html.replace("__AVG3__", str(avg3) if exam_num >= 3 else "—")
+    # ===== عمود المعدلات حسب رقم الفصل =====
+    avg_style = "text-align:center;vertical-align:middle;background:linear-gradient(180deg,#fff7ed,#fff);border:1px solid #d1d5db;padding:10px;"
 
-    # صف المعدل العام والرتبة: يظهر في الفصل الأخير فقط
+    if exam_num == 1:
+        # فصل 1: معدل واحد فقط يمتد كل الصفوف التسعة
+        avg_col = f"""<td rowspan="9" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الأول</div>
+            <div style="font-size:20px;color:#b91c1c;font-weight:700;">{avg1} / 20</div>
+          </td>"""
+
+    elif exam_num == 2:
+        # فصل 2: معدل الأول + معدل الثاني — نقسم الـ9 صفوف إلى قسمين
+        # المعدل الأول يمتد 5 صفوف، المعدل الثاني 4 صفوف
+        avg_col = f"""<td rowspan="5" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الأول</div>
+            <div style="font-size:18px;color:#b91c1c;font-weight:700;">{avg1} / 20</div>
+          </td>"""
+
+    else:
+        # فصل 3: ثلاثة معدلات — 3 + 3 + 3 صفوف
+        avg_col = f"""<td rowspan="3" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الأول</div>
+            <div style="font-size:17px;color:#b91c1c;font-weight:700;">{avg1} / 20</div>
+          </td>"""
+
+    html = html.replace("__AVG_COLUMN__", avg_col)
+
+    # ===== إضافة معدلات الفصل 2 و3 في الصفوف الصحيحة =====
+    if exam_num == 2:
+        # بعد الصف الخامس (الفرنسية) نضيف المعدل الثاني
+        avg2_cell = f"""<td rowspan="4" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الثاني</div>
+            <div style="font-size:18px;color:#b91c1c;font-weight:700;">{avg2} / 20</div>
+          </td>"""
+        html = html.replace("<td class=\"score-cell\">__FRENCH__</td>",
+                            f"<td class=\"score-cell\">{format_value(s.get('الفرنسية 2'))}</td>\n          {avg2_cell}")
+
+    elif exam_num == 3:
+        # بعد الصف الرابع (فرنسية) نضيف معدل 2، وبعد السابع (مدنية) نضيف معدل 3
+        avg2_cell = f"""<td rowspan="3" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الثاني</div>
+            <div style="font-size:17px;color:#b91c1c;font-weight:700;">{avg2} / 20</div>
+          </td>"""
+        avg3_cell = f"""<td rowspan="3" style="{avg_style}">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">معدل الامتحان الثالث</div>
+            <div style="font-size:17px;color:#b91c1c;font-weight:700;">{avg3} / 20</div>
+          </td>"""
+        html = html.replace("<td class=\"score-cell\">__FRENCH__</td>",
+                            f"<td class=\"score-cell\">{format_value(s.get('الفرنسية 3'))}</td>\n          {avg2_cell}")
+        html = html.replace("<td class=\"score-cell\">__CIVICS__</td>",
+                            f"<td class=\"score-cell\">{format_value(s.get('التربية المدنية 3'))}</td>\n          {avg3_cell}")
+
+    # ===== عمود الملاحظات: خانة واحدة فقط تحتوي القرار =====
+    notes_col = f"""<td rowspan="9" style="text-align:center;vertical-align:middle;border:2px solid {dec_border};padding:12px;background:{dec_bg};">
+            <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:8px;">الملاحظات</div>
+            <div style="font-size:18px;font-weight:700;color:{dec_color};">{decision_val}</div>
+          </td>"""
+    html = html.replace("__NOTES_COLUMN__", notes_col)
+
+    # ===== صف المعدل العام والرتبة (فصل أخير فقط) =====
     if exam_num == 3:
         general_row = f"""<tr>
           <td colspan="2" style="text-align:center;font-size:14px;font-weight:600;color:#374151;background:linear-gradient(135deg,#eff6ff,#fff);border:1px solid #d1d5db;padding:10px;">
@@ -762,7 +802,7 @@ def build_report_html(s, format_value, exam_num, logo_b64):
         </tr>"""
     else:
         general_row = f"""<tr>
-          <td colspan="4" style="text-align:center;font-size:14px;font-weight:600;color:#374151;background:#f8fafc;border:1px solid #d1d5db;padding:10px;">
+          <td colspan="4" style="text-align:center;font-size:14px;font-weight:600;background:#f8fafc;border:1px solid #d1d5db;padding:10px;">
             الرتبة: <span style="color:#1d4ed8;font-size:16px;font-weight:700;">{rank_val}</span>
           </td>
         </tr>"""
