@@ -591,9 +591,9 @@ def build_report_html(s, format_value, exam_num, logo_b64):
     </div>
     <div class="col col-left">
       <div class="motto">شـرف – إخـاء – عـدل</div>
-      العام الدراسي: 2025/2026<br>
+      العام الدراسي: 2026/2027<br>
       المدرسة: كنكوصة 4<br>
-      القسم: الثالث ابتدائي
+      القسم: الرابع ابتدائي
     </div>
   </div>
 
